@@ -1,0 +1,7 @@
+site_id: npm
+name: npm Registry
+aliases:
+  - npmjs
+origins:
+  - https://www.npmjs.com
+notes: Public npm package registry search.

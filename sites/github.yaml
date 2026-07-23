@@ -1,0 +1,9 @@
+site_id: github
+name: GitHub
+aliases:
+  - gh
+origins:
+  - https://github.com
+  - https://www.github.com
+  - https://api.github.com
+notes: Public GitHub workflows (no auth required).

@@ -1,0 +1,8 @@
+site_id: example
+name: Example Domain
+aliases:
+  - example-domain
+origins:
+  - https://example.com
+  - https://www.example.com
+notes: Stable public page for smoke-testing flowrun.

@@ -1,0 +1,15 @@
+node_modules/
+dist/
+*.tsbuildinfo
+.DS_Store
+library/local/**
+!library/local/.gitkeep
+traces/**
+!traces/.gitkeep
+.env
+.env.*
+*.vault
+.flowrun/
+coverage/
+playwright-report/
+test-results/

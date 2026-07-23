@@ -1,0 +1,28 @@
+id: web/npm/search-packages
+version: 1.0.0
+title: Search npm packages
+description: Open npmjs.com and search for a package.
+site_id: npm
+origins:
+  - https://www.npmjs.com
+tags:
+  - npm
+  - search
+aliases:
+  - npm-search
+params:
+  query:
+    type: string
+    required: true
+    description: Package name or search term (e.g. playwright)
+requires_vault: []
+steps:
+  - navigate:
+      url: "https://www.npmjs.com/search?q={{query}}"
+  - wait:
+      text: "{{query}}"
+      timeout_ms: 20000
+  - assert:
+      title_includes: "{{query}}"
+pitfalls:
+  - "npm search is client-side rendered — wait for visible results before asserting."

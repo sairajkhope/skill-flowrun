@@ -1,0 +1,31 @@
+id: web/example/full-page-check
+version: 1.0.0
+title: Full-page check of example.com
+description: Navigate, wait, assert, take a screenshot.
+site_id: example
+origins:
+  - https://example.com
+  - https://www.example.com
+tags:
+  - smoke
+  - example
+  - screenshot
+aliases:
+  - example-check
+params: {}
+requires_vault: []
+steps:
+  - navigate:
+      url: https://example.com
+  - wait:
+      text: Example Domain
+      timeout_ms: 15000
+  - assert:
+      title_includes: Example
+      url_includes: example.com
+      text: "illustrative"
+  - screenshot:
+      full_page: true
+pitfalls:
+  - "Offline causes navigate failure — not a selector issue."
+  - "example.com rarely changes, but text asserts can break on content updates."

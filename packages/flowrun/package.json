@@ -1,0 +1,43 @@
+{
+  "name": "flowrun",
+  "version": "0.1.0",
+  "description": "Deterministic web workflow runner for coding agents — train, run, improve",
+  "type": "module",
+  "bin": {
+    "flowrun": "./bin/flowrun"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "tsc -p tsconfig.json --watch",
+    "start": "node dist/cli.js",
+    "flowrun": "node dist/cli.js",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "playwright",
+    "workflow",
+    "agent-skills",
+    "automation"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "pixelmatch": "^7.2.0",
+    "playwright": "^1.53.0",
+    "pngjs": "^7.0.0",
+    "yaml": "^2.8.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.0",
+    "@types/pngjs": "^6.0.5",
+    "typescript": "^5.8.3"
+  }
+}

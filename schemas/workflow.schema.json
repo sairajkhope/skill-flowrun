@@ -1,0 +1,163 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://flowrun.dev/schemas/workflow.schema.json",
+  "title": "flowrun workflow",
+  "type": "object",
+  "required": ["id", "version", "site_id", "origins", "steps"],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^web/[a-z0-9-]+/[a-z0-9-]+$",
+      "description": "Canonical ref: web/<site_id>/<workflow_id>"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "title": { "type": "string" },
+    "description": { "type": "string" },
+    "site_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$"
+    },
+    "origins": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string", "format": "uri" }
+    },
+    "tags": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "aliases": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "params": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "type": { "type": "string", "enum": ["string", "number", "boolean"] },
+          "required": { "type": "boolean" },
+          "default": {},
+          "description": { "type": "string" }
+        },
+        "required": ["type"]
+      }
+    },
+    "requires_vault": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Vault slot names (values never embedded in YAML)"
+    },
+    "steps": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/step" }
+    },
+    "pitfalls": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "meta": {
+      "type": "object",
+      "properties": {
+        "verified": {
+          "type": "object",
+          "required": ["verified_at", "runs", "all_passed"],
+          "properties": {
+            "verified_at": { "type": "string", "format": "date-time" },
+            "runs": { "type": "integer", "minimum": 1 },
+            "all_passed": { "type": "boolean" },
+            "avg_duration_ms": { "type": "number" },
+            "params_used": { "type": "object" },
+            "environment": { "type": "string" }
+          }
+        },
+        "promoted": {
+          "type": "object",
+          "required": ["promoted_at", "promoted_from"],
+          "properties": {
+            "promoted_at": { "type": "string", "format": "date-time" },
+            "promoted_from": { "type": "string" },
+            "previous_version": { "type": "string" }
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "locator": {
+      "type": "object",
+      "properties": {
+        "role": { "type": "string" },
+        "name": { "type": "string" },
+        "testid": { "type": "string" },
+        "text": { "type": "string" },
+        "css": { "type": "string" },
+        "placeholder": { "type": "string" }
+      }
+    },
+    "step": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "navigate": {
+          "type": "object",
+          "required": ["url"],
+          "properties": {
+            "url": { "type": "string" }
+          }
+        },
+        "click": { "$ref": "#/$defs/locator" },
+        "fill": {
+          "allOf": [
+            { "$ref": "#/$defs/locator" },
+            {
+              "type": "object",
+              "properties": {
+                "value": { "type": "string" },
+                "value_from": {
+                  "type": "string",
+                  "pattern": "^vault:"
+                }
+              }
+            }
+          ]
+        },
+        "press": {
+          "type": "object",
+          "required": ["key"],
+          "properties": {
+            "key": { "type": "string" }
+          }
+        },
+        "wait": {
+          "type": "object",
+          "properties": {
+            "url_includes": { "type": "string" },
+            "text": { "type": "string" },
+            "timeout_ms": { "type": "integer", "minimum": 0 }
+          }
+        },
+        "assert": {
+          "type": "object",
+          "properties": {
+            "url_includes": { "type": "string" },
+            "text": { "type": "string" },
+            "title_includes": { "type": "string" }
+          }
+        },
+        "screenshot": {
+          "type": "object",
+          "properties": {
+            "path": { "type": "string" },
+            "full_page": { "type": "boolean" }
+          }
+        }
+      }
+    }
+  }
+}

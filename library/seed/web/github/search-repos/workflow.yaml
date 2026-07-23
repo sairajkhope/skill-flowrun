@@ -1,0 +1,29 @@
+id: web/github/search-repos
+version: 1.0.0
+title: Search GitHub repositories
+description: Navigate to GitHub search and verify results load for a query.
+site_id: github
+origins:
+  - https://github.com
+tags:
+  - github
+  - search
+aliases:
+  - gh-search
+params:
+  query:
+    type: string
+    required: true
+    description: Search term (e.g. playwright)
+requires_vault: []
+steps:
+  - navigate:
+      url: "https://github.com/search?q={{query}}&type=repositories"
+  - wait:
+      text: "{{query}}"
+      timeout_ms: 20000
+  - assert:
+      url_includes: github.com/search
+pitfalls:
+  - "GitHub rate-limits unauthenticated search — if 429, wait and retry."
+  - "Empty results still load the page; assert checks URL only."
