@@ -1,0 +1,1110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flowrun Library</title>
+<meta name="description" content="Browse and discover flowrun workflows — verified automation recipes for web tasks.">
+<meta property="og:title" content="Flowrun Library">
+<meta property="og:description" content="Browse and discover flowrun workflows.">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
+<style>
+:root {
+  --bg: #0a0a0b;
+  --surface: #141416;
+  --surface-2: #1a1a1e;
+  --border: #232326;
+  --border-hover: #333338;
+  --text: #e4e4e7;
+  --text-2: #a1a1aa;
+  --text-3: #71717a;
+  --accent: #22d65e;
+  --accent-bg: rgba(34, 214, 94, 0.1);
+  --red: #ef4444;
+  --red-bg: rgba(239, 68, 68, 0.1);
+  --verified: #22d65e;
+  --unverified: #71717a;
+  --radius: 8px;
+  --radius-lg: 12px;
+  --shadow: 0 1px 2px rgba(0,0,0,0.3);
+  --sidebar-w: 220px;
+  --header-h: 56px;
+  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --mono: "SF Mono", "Fira Code", "Cascadia Code", monospace;
+}
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg: #fafafa;
+    --surface: #ffffff;
+    --surface-2: #f4f4f5;
+    --border: #e4e4e7;
+    --border-hover: #d4d4d8;
+    --text: #18181b;
+    --text-2: #52525b;
+    --text-3: #a1a1aa;
+    --accent: #16a34a;
+    --accent-bg: rgba(22, 163, 74, 0.08);
+    --verified: #16a34a;
+    --shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Header */
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  height: var(--header-h);
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+  gap: 16px;
+}
+.header h1 {
+  font-size: 17px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.header h1 span { color: var(--accent); }
+.header .stats { color: var(--text-3); font-size: 13px; margin-left: auto; }
+
+/* Layout */
+.layout { display: flex; min-height: calc(100vh - var(--header-h)); }
+
+/* Sidebar */
+.sidebar {
+  width: var(--sidebar-w);
+  flex-shrink: 0;
+  border-right: 1px solid var(--border);
+  padding: 16px 0;
+  overflow-y: auto;
+  position: sticky;
+  top: var(--header-h);
+  height: calc(100vh - var(--header-h));
+}
+.sidebar-section { margin-bottom: 16px; }
+.sidebar-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--text-3);
+  padding: 0 16px 8px;
+  font-weight: 600;
+}
+.sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 16px;
+  font-size: 13px;
+  color: var(--text-2);
+  cursor: pointer;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+  font-family: inherit;
+  transition: background 0.1s;
+  border-left: 2px solid transparent;
+}
+.sidebar-item:hover { background: var(--surface-2); color: var(--text); }
+.sidebar-item.active {
+  color: var(--text);
+  background: var(--accent-bg);
+  border-left-color: var(--accent);
+  font-weight: 500;
+}
+.sidebar-item .count {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--text-3);
+  background: var(--surface-2);
+  padding: 0 6px;
+  border-radius: 4px;
+}
+.sidebar-item.active .count { background: var(--accent-bg); color: var(--accent); }
+
+/* Main */
+.main { flex: 1; padding: 20px 24px 40px; max-width: 100%; }
+
+/* Search + controls */
+.controls {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.search-wrap {
+  position: relative;
+  flex: 1;
+  min-width: 200px;
+}
+.search-wrap input {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 14px 10px 36px;
+  color: var(--text);
+  font-size: 14px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.search-wrap input:focus { border-color: var(--accent); }
+.search-wrap input::placeholder { color: var(--text-3); }
+.search-wrap .icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-3);
+  font-size: 14px;
+  pointer-events: none;
+}
+.kbd-hint {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 10px;
+  color: var(--text-3);
+  background: var(--surface-2);
+  padding: 1px 5px;
+  border-radius: 3px;
+  border: 1px solid var(--border);
+}
+.sort-select {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 12px;
+  color: var(--text-2);
+  font-size: 13px;
+  font-family: inherit;
+  outline: none;
+  cursor: pointer;
+}
+.sort-select:focus { border-color: var(--accent); }
+.result-count {
+  font-size: 13px;
+  color: var(--text-3);
+  white-space: nowrap;
+}
+
+/* Tag filters */
+.tag-row {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+  min-height: 32px;
+}
+.tag {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 4px 12px;
+  font-size: 12px;
+  color: var(--text-3);
+  cursor: pointer;
+  transition: all 0.12s;
+  font-family: inherit;
+}
+.tag:hover { border-color: var(--accent); color: var(--text); }
+.tag.active { background: var(--accent); color: #000; border-color: var(--accent); font-weight: 500; }
+
+/* Grid */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 10px;
+}
+
+/* Card */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 18px 20px;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  cursor: pointer;
+  position: relative;
+}
+.card:hover, .card.highlighted {
+  border-color: var(--border-hover);
+  box-shadow: var(--shadow);
+}
+.card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+.card-id {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text-3);
+  line-height: 1.3;
+  word-break: break-all;
+}
+.card-badge {
+  font-size: 10px;
+  padding: 2px 7px;
+  border-radius: 4px;
+  font-weight: 500;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.badge-verified { background: var(--accent-bg); color: var(--verified); }
+.badge-unverified { background: var(--surface-2); color: var(--text-3); }
+.card h3 {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 4px;
+  line-height: 1.3;
+}
+.card p {
+  font-size: 13px;
+  color: var(--text-2);
+  margin-bottom: 10px;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.card-meta {
+  display: flex;
+  gap: 10px;
+  font-size: 11px;
+  color: var(--text-3);
+  margin-bottom: 10px;
+}
+.card-meta span { display: flex; align-items: center; gap: 3px; }
+.card-tags {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+.card-tag {
+  background: var(--surface-2);
+  border-radius: 4px;
+  padding: 1px 7px;
+  font-size: 10px;
+  color: var(--text-3);
+}
+.card-actions {
+  display: flex;
+  gap: 6px;
+}
+.card-actions button {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 7px 12px;
+  font-size: 12px;
+  color: var(--text-2);
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.12s;
+  line-height: 1;
+}
+.card-actions button:hover { border-color: var(--border-hover); color: var(--text); }
+.card-actions .run-btn { background: var(--accent-bg); color: var(--accent); border-color: transparent; font-weight: 500; }
+.card-actions .run-btn:hover { background: var(--accent); color: #000; }
+.card-actions .copy-btn:active { background: var(--accent-bg); }
+
+/* Pagination */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin: 24px 0 0;
+}
+.pagination button {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 8px 14px;
+  font-size: 13px;
+  color: var(--text-2);
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.12s;
+}
+.pagination button:hover:not(:disabled) { border-color: var(--accent); color: var(--text); }
+.pagination button:disabled { opacity: 0.4; cursor: default; }
+.pagination button.active { background: var(--accent); color: #000; border-color: var(--accent); font-weight: 500; }
+.pagination .page-info {
+  font-size: 13px;
+  color: var(--text-3);
+  padding: 0 8px;
+}
+
+/* States */
+.state {
+  text-align: center;
+  padding: 60px 24px;
+  color: var(--text-3);
+}
+.state h3 { color: var(--text-2); margin-bottom: 6px; font-size: 15px; }
+.state p { font-size: 13px; }
+.state .icon { font-size: 32px; margin-bottom: 12px; }
+
+/* Detail drawer */
+.drawer-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 100;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+}
+.drawer-overlay.open { opacity: 1; pointer-events: auto; }
+.drawer {
+  position: fixed;
+  top: 0;
+  right: -480px;
+  width: 480px;
+  max-width: 100vw;
+  height: 100vh;
+  background: var(--surface);
+  border-left: 1px solid var(--border);
+  z-index: 101;
+  transition: right 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+  display: flex;
+  flex-direction: column;
+  box-shadow: -4px 0 24px rgba(0,0,0,0.3);
+}
+.drawer.open { right: 0; }
+.drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.drawer-header h2 { font-size: 17px; font-weight: 600; }
+.drawer-close {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 6px 10px;
+  color: var(--text-3);
+  cursor: pointer;
+  font-size: 13px;
+  font-family: inherit;
+  transition: all 0.12s;
+}
+.drawer-close:hover { border-color: var(--border-hover); color: var(--text); }
+.drawer-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 24px;
+}
+.drawer-section {
+  margin-bottom: 20px;
+}
+.drawer-section h4 {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-3);
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+.drawer-id {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--text-3);
+  margin-bottom: 16px;
+}
+.drawer-desc { font-size: 14px; color: var(--text-2); line-height: 1.5; margin-bottom: 16px; }
+.drawer-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.drawer-table td {
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+.drawer-table td:first-child {
+  color: var(--text-3);
+  font-family: var(--mono);
+  font-size: 12px;
+  width: 120px;
+  padding-right: 12px;
+}
+.drawer-table td:last-child { color: var(--text-2); }
+.drawer-steps {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 16px;
+  font-family: var(--mono);
+  font-size: 12px;
+  line-height: 1.6;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  color: var(--text-2);
+}
+.drawer-pitfalls {
+  list-style: none;
+  padding: 0;
+}
+.drawer-pitfalls li {
+  font-size: 13px;
+  color: var(--text-2);
+  padding: 6px 0 6px 16px;
+  position: relative;
+  line-height: 1.4;
+}
+.drawer-pitfalls li::before {
+  content: "!";
+  position: absolute;
+  left: 0;
+  color: var(--text-3);
+  font-weight: 600;
+}
+.drawer-cmd {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  font-family: var(--mono);
+  font-size: 12px;
+  line-height: 1.5;
+  word-break: break-all;
+  color: var(--text-2);
+  cursor: pointer;
+  transition: border-color 0.12s;
+  position: relative;
+}
+.drawer-cmd:hover { border-color: var(--accent); }
+.drawer-cmd .copy-toast {
+  position: absolute;
+  right: 8px;
+  top: -8px;
+  background: var(--accent);
+  color: #000;
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-weight: 500;
+  font-family: var(--font);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.drawer-cmd .copy-toast.show { opacity: 1; }
+
+/* Toast */
+.toast-container {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 200;
+}
+.toast {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 18px;
+  font-size: 13px;
+  color: var(--text);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  animation: toast-in 0.2s ease-out;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+@keyframes toast-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Mobile sidebar toggle */
+.sidebar-toggle {
+  display: none;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 6px 10px;
+  color: var(--text-2);
+  cursor: pointer;
+  font-size: 16px;
+  font-family: inherit;
+}
+.sidebar-toggle:hover { color: var(--text); }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--border-hover); }
+
+/* Responsive */
+@media (max-width: 768px) {
+  .sidebar {
+    position: fixed;
+    left: calc(-1 * var(--sidebar-w) - 16px);
+    top: var(--header-h);
+    z-index: 40;
+    background: var(--bg);
+    transition: left 0.2s;
+    height: calc(100vh - var(--header-h));
+    box-shadow: 4px 0 12px rgba(0,0,0,0.3);
+  }
+  .sidebar.open { left: 0; }
+  .sidebar-toggle { display: block; }
+  .header h1 { font-size: 15px; }
+  .main { padding: 16px; }
+  .grid { grid-template-columns: 1fr; }
+  .drawer { width: 100vw; right: -100vw; }
+  .controls { flex-direction: column; align-items: stretch; }
+  .search-wrap { min-width: 0; }
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <button class="sidebar-toggle" onclick="toggleSidebar()" aria-label="Toggle sidebar">☰</button>
+  <h1>flowrun <span>library</span></h1>
+  <div class="stats" id="header-stats">loading…</div>
+</div>
+
+<div class="layout">
+  <nav class="sidebar" id="sidebar" role="navigation" aria-label="Sites and filters">
+    <div class="sidebar-section">
+      <div class="sidebar-label">Sites</div>
+      <div id="site-list"></div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Tags</div>
+      <div id="tag-list"></div>
+    </div>
+  </nav>
+
+  <main class="main" id="main" role="main">
+    <div class="controls">
+      <div class="search-wrap">
+        <span class="icon">🔍</span>
+        <input type="search" id="search" placeholder="Search workflows..." autocomplete="off" aria-label="Search workflows">
+        <span class="kbd-hint">/</span>
+      </div>
+      <select class="sort-select" id="sort" aria-label="Sort order">
+        <option value="relevance">Relevance</option>
+        <option value="name">Name A-Z</option>
+        <option value="name-desc">Name Z-A</option>
+        <option value="newest">Newest</option>
+        <option value="verified">Verified first</option>
+      </select>
+      <span class="result-count" id="result-count"></span>
+    </div>
+
+    <div class="tag-row" id="tag-filters"></div>
+
+    <div id="content-area">
+      <div class="state" id="loading-state">
+        <div class="icon">⏳</div>
+        <h3>Loading library…</h3>
+        <p>Fetching workflow index.</p>
+      </div>
+    </div>
+
+    <div class="pagination" id="pagination"></div>
+  </main>
+</div>
+
+<div class="drawer-overlay" id="drawer-overlay" onclick="closeDrawer()"></div>
+<aside class="drawer" id="drawer" role="dialog" aria-label="Workflow details">
+  <div class="drawer-header">
+    <h2 id="drawer-title"></h2>
+    <button class="drawer-close" onclick="closeDrawer()" aria-label="Close details">Esc ✕</button>
+  </div>
+  <div class="drawer-body" id="drawer-body"></div>
+</aside>
+
+<div class="toast-container" id="toast-container"></div>
+
+<script>
+const DATA_URL = 'library-index.json';
+const PAGE_SIZE = 40;
+const HIGHLIGHT_DELAY = 150;
+
+let index = null;
+let filtered = [];
+let page = 0;
+let highlightedIdx = -1;
+
+/* ---------- fetch ---------- */
+async function load() {
+  try {
+    const res = await fetch(DATA_URL + '?t=' + Date.now());
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    index = await res.json();
+    render();
+  } catch (err) {
+    document.getElementById('content-area').innerHTML = `
+      <div class="state">
+        <div class="icon">⚠️</div>
+        <h3>Failed to load library</h3>
+        <p>${err.message}. Check that library-index.json exists.</p>
+      </div>`;
+    document.getElementById('header-stats').textContent = 'error';
+  }
+}
+
+/* ---------- query state ---------- */
+function getState() {
+  const h = location.hash.slice(1);
+  const params = new URLSearchParams(h);
+  return {
+    site: params.get('site') || '',
+    tag: params.get('tag') || '',
+    search: params.get('search') || '',
+    sort: params.get('sort') || 'relevance',
+    workflow: params.get('w') || '',
+  };
+}
+function setState(updates) {
+  const s = getState();
+  Object.assign(s, updates);
+  const p = new URLSearchParams();
+  if (s.site) p.set('site', s.site);
+  if (s.tag) p.set('tag', s.tag);
+  if (s.search) p.set('search', s.search);
+  if (s.sort && s.sort !== 'relevance') p.set('sort', s.sort);
+  if (s.workflow) p.set('w', s.workflow);
+  const hash = p.toString();
+  history.replaceState(null, '', hash ? '#' + hash : window.location.pathname);
+  return s;
+}
+
+/* ---------- render ---------- */
+function render() {
+  if (!index) return;
+  const state = getState();
+  const { site, tag, search, sort, workflow } = state;
+
+  // Populate sidebar
+  renderSidebar(site, tag);
+  renderTagFilters(tag);
+
+  // Sync UI
+  document.getElementById('search').value = search;
+  document.getElementById('sort').value = sort;
+  document.getElementById('header-stats').textContent =
+    `${index.stats.total_workflows} workflows · ${index.stats.total_sites} sites`;
+
+  // Filter
+  let list = index.workflows;
+  if (site) list = list.filter(w => w.site_id === site);
+  if (tag) list = list.filter(w => w.tags.includes(tag));
+  if (search) {
+    const q = search.toLowerCase();
+    // Score: title exact > title starts > title contains > id contains > tag matches > alias matches
+    list = list.map(w => {
+      let score = 0;
+      const t = w.title.toLowerCase();
+      const id = w.id.toLowerCase();
+      const desc = (w.description || '').toLowerCase();
+      const aliases = (w.aliases || []).join(' ').toLowerCase();
+      if (t === q) score += 100;
+      else if (t.startsWith(q)) score += 50;
+      else if (t.includes(q)) score += 20;
+      if (id.includes(q)) score += 10;
+      if ((w.tags || []).some(tg => tg.includes(q))) score += 5;
+      if (aliases.includes(q)) score += 3;
+      if (desc.includes(q)) score += 2;
+      return { ...w, _score: score };
+    }).filter(w => w._score > 0);
+  }
+
+  // Sort
+  const collator = new Intl.Collator('en');
+  switch (sort) {
+    case 'name':
+      list.sort((a, b) => collator.compare(a.title, b.title));
+      break;
+    case 'name-desc':
+      list.sort((a, b) => collator.compare(b.title, a.title));
+      break;
+    case 'newest':
+      list.sort((a, b) => (b.updated_at || '').localeCompare(a.updated_at || ''));
+      break;
+    case 'verified':
+      list.sort((a, b) => {
+        if (a.verified === b.verified) return collator.compare(a.title, b.title);
+        return a.verified ? -1 : 1;
+      });
+      break;
+    default: // relevance
+      if (search) list.sort((a, b) => (b._score || 0) - (a._score || 0));
+      else list.sort((a, b) => collator.compare(a.title, b.title));
+  }
+
+  filtered = list;
+  page = 0;
+  highlightedIdx = -1;
+  drawPage();
+  drawPagination();
+
+  // Detail drawer
+  if (workflow) {
+    const w = index.workflows.find(x => x.id === workflow);
+    if (w) openDrawer(w);
+  }
+}
+
+function renderSidebar(activeSite, activeTag) {
+  const siteEl = document.getElementById('site-list');
+  let html = `<button class="sidebar-item${!activeSite ? ' active' : ''}" data-site="" onclick="applyFilter('site','')">All sites</button>`;
+  for (const [id, s] of Object.entries(index.sites)) {
+    const a = activeSite === id ? ' active' : '';
+    const checked = s.verified || 0;
+    html += `<button class="sidebar-item${a}" data-site="${id}" onclick="applyFilter('site','${id}')">
+      ${s.title} <span class="count">${s.count}</span>
+    </button>`;
+  }
+  siteEl.innerHTML = html;
+
+  const tagEl = document.getElementById('tag-list');
+  const sortedTags = Object.entries(index.tags).sort((a, b) => b[1].count - a[1].count);
+  html = '';
+  for (const [id, t] of sortedTags) {
+    const a = activeTag === id ? ' active' : '';
+    html += `<button class="sidebar-item${a}" data-tag="${id}" onclick="applyFilter('tag','${id}')">
+      ${id} <span class="count">${t.count}</span>
+    </button>`;
+  }
+  tagEl.innerHTML = html;
+}
+
+function renderTagFilters(activeTag) {
+  if (!index) return;
+  const sortedTags = Object.entries(index.tags).sort((a, b) => b[1].count - a[1].count);
+  let html = '';
+  if (activeTag) {
+    html += `<button class="tag active" onclick="applyFilter('tag','')">✕ ${activeTag}</button>`;
+  }
+  for (const [id, t] of sortedTags.slice(0, 12)) {
+    const a = activeTag === id ? ' active' : '';
+    html += `<button class="tag${a}" onclick="applyFilter('tag','${id}')">${id} ${t.count}</button>`;
+  }
+  document.getElementById('tag-filters').innerHTML = html;
+}
+
+function drawPage() {
+  const area = document.getElementById('content-area');
+  const start = page * PAGE_SIZE;
+  const items = filtered.slice(start, start + PAGE_SIZE);
+  document.getElementById('result-count').textContent =
+    filtered.length > 0 ? `${start + 1}–${Math.min(start + PAGE_SIZE, filtered.length)} of ${filtered.length}` : '';
+
+  if (filtered.length === 0) {
+    const state = getState();
+    if (state.search || state.site || state.tag) {
+      area.innerHTML = `<div class="state"><div class="icon">🔍</div><h3>No workflows found</h3><p>Try a different search or clear filters.</p></div>`;
+    } else {
+      area.innerHTML = `<div class="state"><div class="icon">📭</div><h3>Library is empty</h3><p>No workflows have been published yet.</p></div>`;
+    }
+    return;
+  }
+
+  let html = '<div class="grid">';
+  for (let i = 0; i < items.length; i++) {
+    const w = items[i];
+    const globalIdx = start + i;
+    const verified = w.verified;
+    const pCount = w.params ? w.params.length : 0;
+    const hasMeta = w.step_count || pCount;
+    const runCmd = getRunCmd(w);
+    html += `
+    <div class="card${highlightedIdx === globalIdx ? ' highlighted' : ''}" data-idx="${globalIdx}" data-id="${w.id}"
+         onclick="selectCard(${globalIdx})" ondblclick="openCurrentDrawer()"
+         tabindex="0" role="button" aria-label="${w.title}">
+      <div class="card-top">
+        <span class="card-id">${w.id}</span>
+        <span class="card-badge ${verified ? 'badge-verified' : 'badge-unverified'}">
+          ${verified ? '✓ verified' : 'v' + w.version}
+        </span>
+      </div>
+      <h3>${w.title}</h3>
+      <p>${w.description || ''}</p>
+      ${hasMeta ? `<div class="card-meta">
+        ${w.step_count ? `<span>📋 ${w.step_count} steps</span>` : ''}
+        ${pCount ? `<span>⚙️ ${pCount} param${pCount !== 1 ? 's' : ''}</span>` : ''}
+      </div>` : ''}
+      <div class="card-tags">
+        ${(w.tags || []).slice(0, 4).map(t => `<span class="card-tag">${t}</span>`).join('')}
+      </div>
+      <div class="card-actions">
+        <button class="run-btn" onclick="event.stopPropagation();copyCmd(\`${runCmd}\`)">Copy run</button>
+        <button class="copy-btn" onclick="event.stopPropagation();copyCmd(\`${runCmd}\`)">📋</button>
+      </div>
+    </div>`;
+  }
+  html += '</div>';
+  area.innerHTML = html;
+}
+
+function drawPagination() {
+  const total = Math.ceil(filtered.length / PAGE_SIZE);
+  const el = document.getElementById('pagination');
+  if (total <= 1) { el.innerHTML = ''; return; }
+  let html = `<button ${page <= 0 ? 'disabled' : ''} onclick="goPage(${page - 1})">← Prev</button>`;
+  const startP = Math.max(0, page - 2);
+  const endP = Math.min(total, page + 3);
+  if (startP > 0) html += `<button onclick="goPage(0)">1</button>${startP > 1 ? '<span class="page-info">…</span>' : ''}`;
+  for (let i = startP; i < endP; i++) {
+    html += `<button class="${i === page ? 'active' : ''}" onclick="goPage(${i})">${i + 1}</button>`;
+  }
+  if (endP < total) html += `${endP < total - 1 ? '<span class="page-info">…</span>' : ''}<button onclick="goPage(${total - 1})">${total}</button>`;
+  html += `<button ${page >= total - 1 ? 'disabled' : ''} onclick="goPage(${page + 1})">Next →</button>`;
+  el.innerHTML = html;
+}
+
+function goPage(n) {
+  page = Math.max(0, Math.min(n, Math.ceil(filtered.length / PAGE_SIZE) - 1));
+  highlightedIdx = -1;
+  drawPage();
+  drawPagination();
+  document.getElementById('main').scrollTop = 0;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+/* ---------- actions ---------- */
+function applyFilter(key, value) {
+  const s = setState({ [key]: value, workflow: '' });
+  // Sync search input
+  document.getElementById('search').value = s.search || '';
+  render();
+  if (window.innerWidth <= 768) document.getElementById('sidebar').classList.remove('open');
+}
+
+function selectCard(idx) {
+  highlightedIdx = idx;
+  const cards = document.querySelectorAll('.card');
+  cards.forEach((c, i) => c.classList.toggle('highlighted', idx === idx));
+  // just visual highlight
+  drawPage(); // re-render to show highlight
+  // scroll into view
+  const card = document.querySelector(`.card[data-idx="${idx}"]`);
+  if (card) card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function openCurrentDrawer() {
+  const item = filtered[highlightedIdx] || filtered[page * PAGE_SIZE];
+  if (item) openDrawer(item);
+}
+
+function openDrawer(w) {
+  setState({ workflow: w.id });
+  document.getElementById('drawer-title').textContent = w.title;
+  const pCount = w.params ? w.params.length : 0;
+  const stepsYaml = formatSteps(w.steps, w.id);
+  const runCmd = getRunCmd(w);
+  const closedPitfalls = w.pitfalls && w.pitfalls.length > 0;
+
+  let html = `<div class="drawer-id">${w.id} ${w.verified ? '<span class="badge-verified" style="font-size:10px;padding:1px 6px;border-radius:3px;font-weight:500;">✓ verified</span>' : ''}</div>`;
+  html += `<div class="drawer-desc">${w.description || ''}</div>`;
+
+  if (pCount > 0) {
+    html += `<div class="drawer-section"><h4>Parameters</h4><table class="drawer-table">`;
+    for (const [name, p] of Object.entries(w.params)) {
+      const req = p.required ? '<span style="color:var(--red)">*required</span>' : `default: ${p.default || '—'}`;
+      html += `<tr><td>${name}</td><td>${p.type} · ${req}${p.description ? '<br>' + p.description : ''}</td></tr>`;
+    }
+    html += `</table></div>`;
+  }
+
+  html += `<div class="drawer-section"><h4>Steps</h4><pre class="drawer-steps">${escapeHtml(stepsYaml)}</pre></div>`;
+
+  if (closedPitfalls) {
+    html += `<div class="drawer-section"><h4>Pitfalls</h4><ul class="drawer-pitfalls">`;
+    for (const p of w.pitfalls) html += `<li>${escapeHtml(p)}</li>`;
+    html += `</ul></div>`;
+  }
+
+  html += `<div class="drawer-section"><h4>Run command</h4><div class="drawer-cmd" onclick="copyCmd(\`${runCmd}\`,this)" title="Click to copy">${escapeHtml(runCmd)}<span class="copy-toast" id="drawer-copy-toast">Copied!</span></div></div>`;
+
+  if (w.aliases && w.aliases.length > 0) {
+    html += `<div class="drawer-section"><h4>Aliases</h4><span style="font-size:13px;color:var(--text-2);font-family:var(--mono)">${w.aliases.join(', ')}</span></div>`;
+  }
+  if (w.origins && w.origins.length > 0) {
+    html += `<div class="drawer-section"><h4>Origins</h4><span style="font-size:13px;color:var(--text-2)">${w.origins.join(', ')}</span></div>`;
+  }
+
+  document.getElementById('drawer-body').innerHTML = html;
+  document.getElementById('drawer').classList.add('open');
+  document.getElementById('drawer-overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeDrawer() {
+  setState({ workflow: '' });
+  document.getElementById('drawer').classList.remove('open');
+  document.getElementById('drawer-overlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function getRunCmd(w) {
+  const params = w.params ? Object.keys(w.params) : [];
+  const paramStr = params.slice(0, 2).map(p => `--param ${p}=...`).join(' ');
+  return `flowrun run ${w.id}${paramStr ? ' ' + paramStr : ''}`;
+}
+
+async function copyCmd(text, el) {
+  try {
+    await navigator.clipboard.writeText(text);
+  } catch {
+    // fallback
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    ta.remove();
+  }
+  if (el) {
+    const toast = el.querySelector('.copy-toast');
+    if (toast) { toast.classList.add('show'); setTimeout(() => toast.classList.remove('show'), 1200); }
+  }
+  showToast('Copied to clipboard');
+}
+
+function showToast(msg) {
+  const c = document.getElementById('toast-container');
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.textContent = msg;
+  c.appendChild(t);
+  setTimeout(() => t.remove(), 2000);
+}
+
+/* ---------- formatting ---------- */
+function formatSteps(steps, id) {
+  // reconstruct minimal YAML-like format from step objects
+  if (!steps || !steps.length) return '(no steps)';
+  return steps.map(s => {
+    const key = Object.keys(s)[0];
+    const val = s[key];
+    if (typeof val === 'string') return `  - ${key}: ${val}`;
+    const lines = [`  - ${key}:`];
+    for (const [k, v] of Object.entries(val)) {
+      if (typeof v === 'boolean') lines.push(`      ${k}: ${v}`);
+      else if (typeof v === 'number') lines.push(`      ${k}: ${v}`);
+      else lines.push(`      ${k}: "${v}"`);
+    }
+    return lines.join('\n');
+  }).join('\n');
+}
+
+function escapeHtml(s) {
+  if (!s) return '';
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+          .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+/* ---------- keyboard ---------- */
+document.addEventListener('keydown', e => {
+  // Don't capture when focus is in input/select
+  const tag = e.target.tagName;
+  if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') {
+    if (e.key === 'Escape') { e.target.blur(); return; }
+    return;
+  }
+
+  switch (e.key) {
+    case '/':
+      e.preventDefault();
+      document.getElementById('search').focus();
+      break;
+    case 'Escape':
+      if (document.getElementById('drawer').classList.contains('open')) {
+        closeDrawer();
+        e.preventDefault();
+      }
+      break;
+    case 'j':
+    case 'ArrowDown':
+      e.preventDefault();
+      if (filtered.length > 0) {
+        const idx = Math.min(highlightedIdx + 1, filtered.length - 1);
+        highlightedIdx = idx;
+        const card = document.querySelector(`.card[data-idx="${idx}"]`);
+        if (card) card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        drawPage();
+      }
+      break;
+    case 'k':
+    case 'ArrowUp':
+      e.preventDefault();
+      if (filtered.length > 0) {
+        const idx = Math.max(highlightedIdx - 1, 0);
+        highlightedIdx = idx;
+        const card = document.querySelector(`.card[data-idx="${idx}"]`);
+        if (card) card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        drawPage();
+      }
+      break;
+    case 'Enter':
+      e.preventDefault();
+      if (highlightedIdx >= 0 && highlightedIdx < filtered.length) {
+        openDrawer(filtered[highlightedIdx]);
+      } else if (filtered.length > 0) {
+        openDrawer(filtered[0]);
+      }
+      break;
+    case 'h':
+      if (!e.ctrlKey && !e.metaKey) break;
+      // fall through for Ctrl+h = history back
+      break;
+  }
+});
+
+/* ---------- search with debounce ---------- */
+let searchTimer;
+document.getElementById('search').addEventListener('input', () => {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => {
+    setState({ search: document.getElementById('search').value, workflow: '' });
+    render();
+  }, 150);
+});
+
+document.getElementById('sort').addEventListener('change', () => {
+  setState({ sort: document.getElementById('sort').value });
+  render();
+});
+
+/* ---------- hash change ---------- */
+window.addEventListener('hashchange', render);
+
+/* ---------- sidebar toggle ---------- */
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+}
+
+/* ---------- init ---------- */
+load();
+</script>
+</body>
+</html>

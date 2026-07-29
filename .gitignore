@@ -13,3 +13,4 @@ traces/**
 coverage/
 playwright-report/
 test-results/
+wiki.md

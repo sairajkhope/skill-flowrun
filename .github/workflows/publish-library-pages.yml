@@ -1,0 +1,39 @@
+name: Publish library site
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'library/seed/**/*.yaml'
+      - 'sites/*.yaml'
+      - 'packages/flowrun/scripts/generate-site.ts'
+      - 'docs/index.html'
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: packages/flowrun/package-lock.json
+      - run: npm ci
+        working-directory: packages/flowrun
+      - run: npm run generate-site
+        working-directory: packages/flowrun
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs
+      - id: deployment
+        uses: actions/deploy-pages@v4

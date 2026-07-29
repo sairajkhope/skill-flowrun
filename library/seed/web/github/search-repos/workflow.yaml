@@ -20,10 +20,11 @@ steps:
   - navigate:
       url: "https://github.com/search?q={{query}}&type=repositories"
   - wait:
-      text: "{{query}}"
+      url_includes: "/search"
       timeout_ms: 20000
   - assert:
-      url_includes: github.com/search
+      url_includes: "github.com/search"
+      title_includes: "repository"
 pitfalls:
   - "GitHub rate-limits unauthenticated search — if 429, wait and retry."
-  - "Empty results still load the page; assert checks URL only."
+  - "Prefer url/title asserts; result text is often in hidden DOM nodes."

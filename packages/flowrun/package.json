@@ -1,6 +1,6 @@
 {
   "name": "flowrun",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Deterministic web workflow runner for coding agents — train, run, improve",
   "type": "module",
   "bin": {
@@ -17,7 +17,9 @@
     "dev": "tsc -p tsconfig.json --watch",
     "start": "node dist/cli.js",
     "flowrun": "node dist/cli.js",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
+    "generate-site": "tsx scripts/generate-site.ts",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "tsx --test test/**/*.test.ts"
   },
   "engines": {
     "node": ">=18"
@@ -38,6 +40,7 @@
   "devDependencies": {
     "@types/node": "^22.15.0",
     "@types/pngjs": "^6.0.5",
+    "tsx": "^4.20.0",
     "typescript": "^5.8.3"
   }
 }

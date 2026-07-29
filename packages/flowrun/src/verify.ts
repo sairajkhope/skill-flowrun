@@ -5,9 +5,7 @@ import { stringify as stringifyYaml } from "yaml";
 import pixelmatch from "pixelmatch";
 import { PNG } from "pngjs";
 import { runWorkflow } from "./runner.js";
-import { resolveRefFlexible } from "./library.js";
 import type {
-  RunResult,
   VerifyResult,
   VerifyRunDetail,
   WorkflowRecord,
@@ -22,10 +20,6 @@ export type VerifyOptions = {
   root: string;
   vault?: Record<string, string>;
 };
-
-function sha256(buf: Buffer): string {
-  return crypto.createHash("sha256").update(buf).digest("hex");
-}
 
 export async function verifyWorkflow(
   record: WorkflowRecord,
@@ -63,11 +57,12 @@ export async function verifyWorkflow(
           await page.screenshot({ path: shotPath, fullPage: true });
         }
         await browser.close();
-      } catch {
+      } catch (e) {
+        console.warn(`screenshot capture failed: ${(e as Error).message}`);
       }
       if (fs.existsSync(shotPath)) {
         const buf = fs.readFileSync(shotPath);
-        screenshot_sha256 = sha256(buf);
+        screenshot_sha256 = crypto.createHash("sha256").update(buf).digest("hex");
         screenshots.push(buf);
       }
     }
@@ -99,14 +94,13 @@ export async function verifyWorkflow(
         const w = Math.min(img1.width, img2.width);
         const h = Math.min(img1.height, img2.height);
         const diff = new PNG({ width: w, height: h });
-        const changed = pixelmatch(
-          img1.data,
-          img2.data,
-          diff.data,
-          w,
-          h,
-          { threshold },
-        );
+        const crop1 = Buffer.alloc(w * h * 4);
+        const crop2 = Buffer.alloc(w * h * 4);
+        for (let y = 0; y < h; y++) {
+          img1.data.copy(crop1, y * w * 4, y * img1.width * 4, y * img1.width * 4 + w * 4);
+          img2.data.copy(crop2, y * w * 4, y * img2.width * 4, y * img2.width * 4 + w * 4);
+        }
+        const changed = pixelmatch(crop1, crop2, diff.data, w, h, { threshold });
         const totalPixels = w * h;
         const pct = totalPixels > 0 ? (changed / totalPixels) * 100 : 0;
         const deltaBuf = PNG.sync.write(diff);
@@ -116,13 +110,14 @@ export async function verifyWorkflow(
           changed_pixels_pct: Math.round(pct * 100) / 100,
           delta_png_bytes: deltaBuf.length,
         });
-      } catch {
+      } catch (e) {
+        console.warn(`screenshot delta compare failed: ${(e as Error).message}`);
       }
     }
   }
 
   return {
-    ok: all_ok || !flaky,
+    ok: all_ok,
     ref: record.workflow.id,
     version: record.workflow.version,
     runs: count,

@@ -1,7 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
 import { chromium, type Locator, type Page } from "playwright";
-import { interpolate } from "./interpolate.js";
 import { libraryDirs } from "./paths.js";
 import type {
   LocatorFields,
@@ -11,6 +10,15 @@ import type {
   WorkflowRecord,
   WorkflowStep,
 } from "./types.js";
+
+function interpolate(template: string, params: Record<string, string>): string {
+  return template.replace(/\{\{\s*([a-zA-Z0-9_.-]+)\s*\}\}/g, (_, key: string) => {
+    if (!(key in params)) {
+      throw new Error(`Missing param for placeholder {{${key}}}`);
+    }
+    return params[key];
+  });
+}
 
 export type RunOptions = {
   params?: Record<string, string>;
@@ -37,12 +45,11 @@ function originAllowed(url: string, origins: string[]): boolean {
   });
 }
 
-function stepName(step: WorkflowStep): string {
-  return Object.keys(step)[0] ?? "unknown";
+export function stepName(step: WorkflowStep): string {
+  return Object.keys(step)[0];
 }
 
 async function locate(page: Page, loc: LocatorFields): Promise<Locator> {
-  if (loc.testid) return page.getByTestId(loc.testid);
   if (loc.role && loc.name) {
     return page.getByRole(loc.role as Parameters<Page["getByRole"]>[0], {
       name: loc.name,
@@ -51,6 +58,7 @@ async function locate(page: Page, loc: LocatorFields): Promise<Locator> {
   if (loc.role) {
     return page.getByRole(loc.role as Parameters<Page["getByRole"]>[0]);
   }
+  if (loc.testid) return page.getByTestId(loc.testid);
   if (loc.placeholder) return page.getByPlaceholder(loc.placeholder);
   if (loc.text) return page.getByText(loc.text);
   if (loc.css) return page.locator(loc.css);
@@ -161,6 +169,7 @@ export async function runWorkflow(
 
   let final_url: string | undefined;
   let fatal: string | undefined;
+  let failShot: string | undefined;
 
   try {
     for (let i = 0; i < wf.steps.length; i++) {
@@ -176,26 +185,27 @@ export async function runWorkflow(
         });
       } catch (e) {
         const msg = (e as Error).message;
+        if (opts.tracesDir) {
+          fs.mkdirSync(opts.tracesDir, { recursive: true });
+          failShot = path.join(
+            opts.tracesDir,
+            `${wf.id.replaceAll("/", "_")}-${Date.now()}.png`,
+          );
+          try {
+            await page.screenshot({ path: failShot, fullPage: true });
+          } catch {
+            failShot = undefined;
+          }
+        }
         steps.push({
           index: i,
           step: stepName(step),
           ok: false,
           error: msg,
           duration_ms: Date.now() - t0,
+          screenshot: failShot,
         });
         fatal = `step ${i} (${stepName(step)}): ${msg}`;
-        if (opts.tracesDir) {
-          fs.mkdirSync(opts.tracesDir, { recursive: true });
-          const shot = path.join(
-            opts.tracesDir,
-            `${wf.id.replaceAll("/", "_")}-${Date.now()}.png`,
-          );
-          try {
-            await page.screenshot({ path: shot, fullPage: true });
-          } catch {
-            /* ignore */
-          }
-        }
         break;
       }
     }
@@ -215,16 +225,17 @@ export async function runWorkflow(
     final_url,
     steps,
     error: fatal,
+    screenshot: failShot,
   };
 }
 
-async function execStep(
+export async function execStep(
   page: Page,
   step: WorkflowStep,
   params: Record<string, string>,
   vault: Record<string, string>,
   origins: string[],
-  opts: RunOptions,
+  opts: RunOptions = {},
 ): Promise<void> {
   if ("navigate" in step) {
     const url = interpolate(step.navigate.url, params);
@@ -276,20 +287,20 @@ async function execStep(
   if ("assert" in step) {
     if (step.assert.url_includes) {
       const part = interpolate(step.assert.url_includes, params);
-      if (!page.url().includes(part)) {
+      if (!page.url().toLowerCase().includes(part.toLowerCase())) {
         throw new Error(`assert url_includes "${part}" failed; url=${page.url()}`);
       }
     }
     if (step.assert.title_includes) {
       const part = interpolate(step.assert.title_includes, params);
       const title = await page.title();
-      if (!title.includes(part)) {
+      if (!title.toLowerCase().includes(part.toLowerCase())) {
         throw new Error(`assert title_includes "${part}" failed; title=${title}`);
       }
     }
     if (step.assert.text) {
       const text = interpolate(step.assert.text, params);
-      const count = await page.getByText(text).count();
+      const count = await page.getByText(text, { exact: false }).count();
       if (!count) throw new Error(`assert text "${text}" not found`);
     }
     return;

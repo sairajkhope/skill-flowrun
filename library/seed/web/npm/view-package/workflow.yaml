@@ -1,0 +1,30 @@
+id: web/npm/view-package
+version: 1.0.0
+title: View npm package details
+description: Navigate to an npm package page and verify it loads.
+site_id: npm
+origins:
+  - https://www.npmjs.com
+tags:
+  - npm
+  - view
+aliases:
+  - npm-view
+params:
+  package:
+    type: string
+    required: true
+    description: Package name (e.g. playwright)
+requires_vault: []
+steps:
+  - navigate:
+      url: "https://www.npmjs.com/package/{{package}}"
+  - wait:
+      url_includes: "/package/"
+      timeout_ms: 20000
+  - assert:
+      url_includes: "npmjs.com/package/"
+      title_includes: "{{package}}"
+pitfalls:
+  - "npmjs.com serves Cloudflare challenges — url_includes and title_includes are the stable asserts."
+  - "If the package doesn't exist, npm returns a 404 page instead of an error page."

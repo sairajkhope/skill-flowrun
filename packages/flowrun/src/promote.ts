@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { stringify as stringifyYaml } from "yaml";
-import { resolveRefFlexible } from "./library.js";
+import { resolveRefFlexible, bumpVersion } from "./library.js";
 import { libraryDirs } from "./paths.js";
 import type { Workflow, PromoteOptions } from "./types.js";
 
@@ -16,18 +16,6 @@ export type PromoteResult = {
   error?: string;
   git_hints: string[];
 };
-
-function bumpSemver(v: string, kind: "minor" | "patch"): string {
-  const parts = v.split(".").map(Number);
-  if (parts.length !== 3 || parts.some(isNaN)) {
-    return kind === "minor" ? "1.0.0" : `${parts[0] || 0}.${parts[1] || 0}.${(parts[2] || 0) + 1}`;
-  }
-  if (kind === "minor") {
-    if (parts[0] === 0 && parts[1] === 0) return "1.0.0";
-    return `${parts[0]}.${parts[1] + 1}.0`;
-  }
-  return `${parts[0]}.${parts[1]}.${parts[2] + 1}`;
-}
 
 export function promoteWorkflow(opts: PromoteOptions): PromoteResult {
   const { ref, version, force, root } = opts;
@@ -85,7 +73,7 @@ export function promoteWorkflow(opts: PromoteOptions): PromoteResult {
   const targetPath = path.join(targetDir, "workflow.yaml");
 
   const fromVersion = wf.version;
-  const toVersion = version ?? bumpSemver(fromVersion, "minor");
+  const toVersion = version ?? bumpVersion(fromVersion, "minor");
 
   const pitfalls_removed: string[] = [];
   if (wf.pitfalls) {
@@ -111,7 +99,7 @@ export function promoteWorkflow(opts: PromoteOptions): PromoteResult {
   wf.meta ??= {};
   wf.meta.promoted = {
     promoted_at: new Date().toISOString(),
-      promoted_from: fromVersion,
+    promoted_from: fromVersion,
   };
 
   fs.mkdirSync(targetDir, { recursive: true });
