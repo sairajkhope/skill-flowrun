@@ -76,14 +76,6 @@ export type Workflow = {
   meta?: WorkflowMeta;
 };
 
-export type Site = {
-  site_id: string;
-  name: string;
-  aliases?: string[];
-  origins: string[];
-  notes?: string;
-};
-
 export type WorkflowRecord = {
   workflow: Workflow;
   path: string;
@@ -96,6 +88,7 @@ export type StepResult = {
   ok: boolean;
   error?: string;
   duration_ms: number;
+  screenshot?: string;
 };
 
 export type RunResult = {
@@ -109,6 +102,7 @@ export type RunResult = {
   final_url?: string;
   steps: StepResult[];
   error?: string;
+  screenshot?: string;
   missing_vault?: string[];
   missing_params?: string[];
 };

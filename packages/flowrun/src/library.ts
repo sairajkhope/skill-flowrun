@@ -2,23 +2,13 @@ import fs from "node:fs";
 import path from "node:path";
 import { parse as parseYaml } from "yaml";
 import { libraryDirs } from "./paths.js";
-import type { Site, Workflow, WorkflowRecord } from "./types.js";
+import type { Workflow, WorkflowRecord } from "./types.js";
 
 const WORKFLOW_FILE = "workflow.yaml";
 
-function walkWorkflowFiles(dir: string): string[] {
-  if (!fs.existsSync(dir)) return [];
-  const out: string[] = [];
-  const stack = [dir];
-  while (stack.length) {
-    const cur = stack.pop()!;
-    for (const ent of fs.readdirSync(cur, { withFileTypes: true })) {
-      const p = path.join(cur, ent.name);
-      if (ent.isDirectory()) stack.push(p);
-      else if (ent.name === WORKFLOW_FILE) out.push(p);
-    }
-  }
-  return out;
+function walkWorkflowFiles(root: string): string[] {
+  if (!fs.existsSync(root)) return [];
+  return fs.globSync(`**/${WORKFLOW_FILE}`, { cwd: root }).map((f) => path.join(root, f));
 }
 
 function loadWorkflowFile(filePath: string, layer: "local" | "seed"): WorkflowRecord {
@@ -145,10 +135,10 @@ export function searchWorkflows(root: string, query: string): WorkflowRecord[] {
     .map((x) => x.r);
 }
 
-export function loadSite(root: string, siteId: string): Site | null {
-  const p = path.join(libraryDirs(root).sites, `${siteId}.yaml`);
-  if (!fs.existsSync(p)) return null;
-  return parseYaml(fs.readFileSync(p, "utf8")) as Site;
+export function bumpVersion(v: string, kind: "patch" | "minor"): string {
+  const parts = v.split(".").map(Number);
+  if (kind === "patch") parts[2]++; else { parts[1]++; parts[2] = 0; }
+  return parts.join(".");
 }
 
 export function validateWorkflowShape(wf: Workflow): string[] {

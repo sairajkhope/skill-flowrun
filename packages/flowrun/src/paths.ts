@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 
-/** workflow-skills root (packages/flowrun/dist -> ../../) */
+/** Repo root with library/ + sites/ (packages/flowrun/dist → ../../..) */
 export function defaultRoot(): string {
   const fromEnv = process.env.FLOWRUN_ROOT;
   if (fromEnv && fs.existsSync(fromEnv)) return path.resolve(fromEnv);
@@ -12,10 +12,14 @@ export function defaultRoot(): string {
   const candidates = [
     path.resolve(here, "../../.."),
     path.resolve(process.cwd()),
-    path.resolve(process.cwd(), "workflow-skills"),
+    path.resolve(process.cwd(), ".."),
+    path.resolve(process.cwd(), "../.."),
   ];
   for (const c of candidates) {
-    if (fs.existsSync(path.join(c, "library")) && fs.existsSync(path.join(c, "sites"))) {
+    if (
+      fs.existsSync(path.join(c, "library")) &&
+      fs.existsSync(path.join(c, "sites"))
+    ) {
       return c;
     }
   }
@@ -29,4 +33,8 @@ export function libraryDirs(root: string) {
     sites: path.join(root, "sites"),
     traces: path.join(root, "traces"),
   };
+}
+
+export function defaultVaultPath(root: string): string {
+  return path.join(root, ".flowrun", "vault.enc");
 }

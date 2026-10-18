@@ -26,12 +26,12 @@ Examples: `web/example/open-homepage`, `web/github/create-pr`
 
 ## Setup
 
-From the `workflow-skills` repo (or set `FLOWRUN_ROOT`):
+From the `skill-flowrun` repo (or set `FLOWRUN_ROOT`):
 
 ```bash
 cd packages/flowrun && npm install && npx playwright install chromium && npm run build
-export PATH="$PWD/node_modules/.bin:$PATH"   # or: node dist/cli.js
-# optional: FLOWRUN_ROOT=/path/to/workflow-skills
+export PATH="$PWD/bin:$PATH"   # or: node dist/cli.js
+# optional: FLOWRUN_ROOT=/path/to/skill-flowrun
 ```
 
 ## Commands
@@ -45,6 +45,7 @@ flowrun train <site_id> <workflow_id> [--url <start>] [--headed]
 flowrun improve <ref> [--headed] [--apply]
 flowrun verify <ref> [--count N] [--headed] [--screenshot-compare] [--screenshot-threshold N]
 flowrun promote <ref> [--to-version X.Y.Z] [--force]
+flowrun vault init|unlock|set|get|list|delete|needs|status
 flowrun root                           # resolved library paths
 ```
 
@@ -67,10 +68,20 @@ Placeholders in YAML: `{{param_name}}`.
 
 ### Vault (secrets)
 
+```bash
+flowrun vault init                         # create .flowrun/vault.enc
+flowrun vault set sites.github.password    # prompts; or pass value as arg
+flowrun vault list                         # names only
+flowrun vault needs [ref]                  # missing slots
+flowrun vault status
+flowrun vault unlock --store-keychain      # save pass to OS keychain
+```
+
 - Workflows use `value_from: vault:slot.name` — **never** put secrets in YAML.
-- v0.1: set `FLOWRUN_VAULT=/path/to/vault.yaml` (local map of slot → value).
-- **Do not** print vault values into chat or logs. Only mention missing slot *names*.
-- If `missing_vault` is in the run result, ask the user to fill the vault; do not request that they paste passwords into the model context if avoidable.
+- Unlock: `FLOWRUN_VAULT_PASS`, OS keychain after unlock `--store-keychain`, or plain `FLOWRUN_VAULT=yaml` (dev/CI).
+- `run`/`improve`/`verify` do not prompt; unlock first or set env.
+- **Agents must never run `vault get` or print secret values.** Only missing slot *names* from `needs` / `missing_vault`.
+- Prefer `vault set` with a user-provided value over pasting passwords into chat.
 
 ## Closed loop (Hermes-style)
 
@@ -104,8 +115,9 @@ flowrun verify web/example/open-homepage --screenshot-compare
 
 - Returns `all_ok`, `flaky`, per-run `duration_ms`, and per-step detail.
 - With `--screenshot-compare`, takes a screenshot each run and reports pixel-diff deltas between consecutive runs (`pixelmatch` + `pngjs`).
-- `--screenshot-threshold` sets max allowed changed pixels (default 50).
-- On success (all passed or not flaky), stamps `meta.verified` into the workflow YAML.
+- `--screenshot-threshold` is pixelmatch threshold 0–1 (default `0.05`).
+- On **all runs passed**, stamps `meta.verified` into the workflow YAML.
+
 
 ### Promote
 
@@ -135,7 +147,8 @@ flowrun promote web/example/my-flow --to-version 2.0.0
 
 Required fields: `id`, `version`, `site_id`, `origins`, `steps`.
 
-Locator preference: `testid` > `role`+`name` > `placeholder` > `text` > `css`.
+Locator preference: `role`+`name` > `role` > `testid` > `placeholder` > `text` > `css`.
+
 
 Origin guard: navigate URL and current page must match `origins`.
 

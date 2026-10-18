@@ -1,0 +1,316 @@
+{
+  "$schema": "https://flowrun.dev/schemas/library-index.schema.json",
+  "version": 1,
+  "generated_at": "2026-07-23T19:53:48.531Z",
+  "generator": "flowrun generate-site",
+  "stats": {
+    "total_sites": 3,
+    "total_workflows": 5,
+    "verified": 1
+  },
+  "sites": {
+    "example": {
+      "title": "Example Domain",
+      "count": 2,
+      "verified": 1
+    },
+    "github": {
+      "title": "GitHub",
+      "count": 1,
+      "verified": 0
+    },
+    "npm": {
+      "title": "npm Registry",
+      "count": 2,
+      "verified": 0
+    }
+  },
+  "tags": {
+    "smoke": {
+      "count": 2
+    },
+    "example": {
+      "count": 2
+    },
+    "screenshot": {
+      "count": 1
+    },
+    "github": {
+      "count": 1
+    },
+    "search": {
+      "count": 2
+    },
+    "npm": {
+      "count": 2
+    },
+    "view": {
+      "count": 1
+    }
+  },
+  "workflows": [
+    {
+      "id": "web/example/full-page-check",
+      "version": "1.0.0",
+      "title": "Full-page check of example.com",
+      "description": "Navigate, wait, assert, take a screenshot.",
+      "site_id": "example",
+      "tags": [
+        "smoke",
+        "example",
+        "screenshot"
+      ],
+      "aliases": [
+        "example-check"
+      ],
+      "params": [],
+      "step_count": 4,
+      "verified": false,
+      "verified_info": null,
+      "origins": [
+        "https://example.com",
+        "https://www.example.com"
+      ],
+      "pitfalls": [
+        "Offline causes navigate failure — not a selector issue.",
+        "example.com rarely changes, but text asserts can break on content updates."
+      ],
+      "steps": [
+        {
+          "navigate": {
+            "url": "https://example.com"
+          }
+        },
+        {
+          "wait": {
+            "text": "Example Domain",
+            "timeout_ms": 15000
+          }
+        },
+        {
+          "assert": {
+            "title_includes": "Example",
+            "url_includes": "example.com",
+            "text": "documentation examples"
+          }
+        },
+        {
+          "screenshot": {
+            "full_page": true
+          }
+        }
+      ],
+      "updated_at": "2026-07-23T14:48:23.698Z"
+    },
+    {
+      "id": "web/example/open-homepage",
+      "version": "1.0.0",
+      "title": "Open example.com homepage",
+      "description": "Smoke-test workflow — navigate to example.com and assert title.",
+      "site_id": "example",
+      "tags": [
+        "smoke",
+        "example"
+      ],
+      "aliases": [
+        "example-home"
+      ],
+      "params": [],
+      "step_count": 3,
+      "verified": true,
+      "verified_info": {
+        "verified_at": "2026-07-23T10:47:18.362Z",
+        "runs": 3,
+        "all_passed": true,
+        "avg_duration_ms": 434,
+        "params_used": {},
+        "environment": "flowrun verify count=3"
+      },
+      "origins": [
+        "https://example.com",
+        "https://www.example.com"
+      ],
+      "pitfalls": [
+        "If offline, navigate fails — not a selector issue."
+      ],
+      "steps": [
+        {
+          "navigate": {
+            "url": "https://example.com"
+          }
+        },
+        {
+          "wait": {
+            "text": "Example Domain",
+            "timeout_ms": 15000
+          }
+        },
+        {
+          "assert": {
+            "title_includes": "Example",
+            "url_includes": "example.com"
+          }
+        }
+      ],
+      "updated_at": "2026-07-23T10:47:18.364Z"
+    },
+    {
+      "id": "web/github/search-repos",
+      "version": "1.0.0",
+      "title": "Search GitHub repositories",
+      "description": "Navigate to GitHub search and verify results load for a query.",
+      "site_id": "github",
+      "tags": [
+        "github",
+        "search"
+      ],
+      "aliases": [
+        "gh-search"
+      ],
+      "params": [
+        {
+          "name": "query",
+          "type": "string",
+          "required": true,
+          "default": null,
+          "description": "Search term (e.g. playwright)"
+        }
+      ],
+      "step_count": 3,
+      "verified": false,
+      "verified_info": null,
+      "origins": [
+        "https://github.com"
+      ],
+      "pitfalls": [
+        "GitHub rate-limits unauthenticated search — if 429, wait and retry.",
+        "Prefer url/title asserts; result text is often in hidden DOM nodes."
+      ],
+      "steps": [
+        {
+          "navigate": {
+            "url": "https://github.com/search?q={{query}}&type=repositories"
+          }
+        },
+        {
+          "wait": {
+            "url_includes": "/search",
+            "timeout_ms": 20000
+          }
+        },
+        {
+          "assert": {
+            "url_includes": "github.com/search",
+            "title_includes": "repository"
+          }
+        }
+      ],
+      "updated_at": "2026-07-23T14:49:02.950Z"
+    },
+    {
+      "id": "web/npm/search-packages",
+      "version": "1.0.0",
+      "title": "Search npm packages",
+      "description": "Open npmjs.com and search for a package.",
+      "site_id": "npm",
+      "tags": [
+        "npm",
+        "search"
+      ],
+      "aliases": [
+        "npm-search"
+      ],
+      "params": [
+        {
+          "name": "query",
+          "type": "string",
+          "required": true,
+          "default": null,
+          "description": "Package name or search term (e.g. playwright)"
+        }
+      ],
+      "step_count": 3,
+      "verified": false,
+      "verified_info": null,
+      "origins": [
+        "https://www.npmjs.com"
+      ],
+      "pitfalls": [
+        "npmjs.com often serves Cloudflare bot checks to headless browsers — URL assert is the stable smoke check.",
+        "For headed/manual verify, you can add title_includes: '{{query}}' after the challenge clears."
+      ],
+      "steps": [
+        {
+          "navigate": {
+            "url": "https://www.npmjs.com/search?q={{query}}"
+          }
+        },
+        {
+          "wait": {
+            "url_includes": "/search?q=",
+            "timeout_ms": 20000
+          }
+        },
+        {
+          "assert": {
+            "url_includes": "npmjs.com/search"
+          }
+        }
+      ],
+      "updated_at": "2026-07-23T14:49:41.696Z"
+    },
+    {
+      "id": "web/npm/view-package",
+      "version": "1.0.0",
+      "title": "View npm package details",
+      "description": "Navigate to an npm package page and verify it loads.",
+      "site_id": "npm",
+      "tags": [
+        "npm",
+        "view"
+      ],
+      "aliases": [
+        "npm-view"
+      ],
+      "params": [
+        {
+          "name": "package",
+          "type": "string",
+          "required": true,
+          "default": null,
+          "description": "Package name (e.g. playwright)"
+        }
+      ],
+      "step_count": 3,
+      "verified": false,
+      "verified_info": null,
+      "origins": [
+        "https://www.npmjs.com"
+      ],
+      "pitfalls": [
+        "npmjs.com serves Cloudflare challenges — url_includes and title_includes are the stable asserts.",
+        "If the package doesn't exist, npm returns a 404 page instead of an error page."
+      ],
+      "steps": [
+        {
+          "navigate": {
+            "url": "https://www.npmjs.com/package/{{package}}"
+          }
+        },
+        {
+          "wait": {
+            "url_includes": "/package/",
+            "timeout_ms": 20000
+          }
+        },
+        {
+          "assert": {
+            "url_includes": "npmjs.com/package/",
+            "title_includes": "{{package}}"
+          }
+        }
+      ],
+      "updated_at": "2026-07-23T19:28:38.790Z"
+    }
+  ]
+}

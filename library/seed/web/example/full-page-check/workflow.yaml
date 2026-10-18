@@ -23,7 +23,7 @@ steps:
   - assert:
       title_includes: Example
       url_includes: example.com
-      text: "illustrative"
+      text: "documentation examples"
   - screenshot:
       full_page: true
 pitfalls:
